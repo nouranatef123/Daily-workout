@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>برنامج الكاليثنكس</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --card: #13131a;
+    --card2: #1a1a24;
+    --accent: #c8f060;
+    --accent2: #60d4f0;
+    --accent3: #f060a8;
+    --text: #f0f0f0;
+    --muted: #666;
+    --border: #2a2a3a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BG texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 20%, rgba(200,240,96,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(96,212,240,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 20px 16px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 24px 0 20px;
+  }
+
+  .header .logo {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  .header h1 span {
+    color: var(--accent);
+  }
+
+  /* Day indicator */
+  .day-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .day-info {
+    flex: 1;
+  }
+
+  .day-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+
+  .day-name {
+    font-size: 22px;
+    font-weight: 900;
+    margin: 2px 0 4px;
+  }
+
+  .day-date {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .phase-badge {
+    background: rgba(200,240,96,0.1);
+    border: 1px solid rgba(200,240,96,0.3);
+    color: var(--accent);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* Rest day */
+  .rest-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 20px;
+    text-align: center;
+    margin: 16px 0;
+  }
+
+  .rest-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+
+  .rest-card h2 {
+    font-size: 22px;
+    font-weight: 900;
+    margin-bottom: 8px;
+    color: var(--accent2);
+  }
+
+  .rest-card p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* Session type */
+  .session-type {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .session-tag {
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .session-tag.upper {
+    background: rgba(200,240,96,0.1);
+    border: 1px solid rgba(200,240,96,0.3);
+    color: var(--accent);
+  }
+
+  .session-tag.lower {
+    background: rgba(96,212,240,0.1);
+    border: 1px solid rgba(96,212,240,0.3);
+    color: var(--accent2);
+  }
+
+  /* Exercise list */
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin: 20px 0 10px;
+  }
+
+  .exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .exercise-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .exercise-card::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .exercise-card.done {
+    background: rgba(200,240,96,0.05);
+    border-color: rgba(200,240,96,0.2);
+  }
+
+  .exercise-card.done::before {
+    opacity: 1;
+  }
+
+  .exercise-card:active {
+    transform: scale(0.98);
+  }
+
+  .ex-check {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    background: var(--card2);
+  }
+
+  .exercise-card.done .ex-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+  }
+
+  .ex-info {
+    flex: 1;
+  }
+
+  .ex-name {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+
+  .exercise-card.done .ex-name {
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+
+  .ex-meta {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .ex-meta span {
+    display: inline-block;
+    margin-left: 8px;
+  }
+
+  .ex-meta .sets { color: var(--accent); }
+  .ex-meta .reps { color: var(--accent2); }
+  .ex-meta .rest { color: var(--accent3); }
+
+  /* Progress bar */
+  .progress-section {
+    margin: 20px 0;
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .progress-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .progress-pct {
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--accent);
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--card2);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 100px;
+    transition: width 0.4s ease;
+  }
+
+  /* Overall program progress */
+  .program-progress {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+
+  .prog-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .weeks-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 6px;
+  }
+
+  .week-dot {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--muted);
+    transition: all 0.3s;
+  }
+
+  .week-dot.current {
+    background: rgba(200,240,96,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .week-dot.done {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+  }
+
+  /* Nav buttons */
+  .nav-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .nav-btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:active { transform: scale(0.97); }
+
+  .nav-btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+  }
+
+  /* Tip card */
+  .tip-card {
+    background: rgba(96,212,240,0.05);
+    border: 1px solid rgba(96,212,240,0.2);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--accent2);
+    line-height: 1.6;
+  }
+
+  .tip-card strong {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+    opacity: 0.7;
+  }
+
+  /* Complete animation */
+  .complete-banner {
+    background: linear-gradient(135deg, rgba(200,240,96,0.15), rgba(96,212,240,0.1));
+    border: 1px solid rgba(200,240,96,0.3);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    margin-top: 16px;
+    display: none;
+  }
+
+  .complete-banner.show {
+    display: block;
+    animation: popIn 0.4s ease;
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .complete-banner .emoji { font-size: 36px; }
+  .complete-banner h3 { font-size: 18px; font-weight: 900; color: var(--accent); margin: 8px 0 4px; }
+  .complete-banner p { font-size: 13px; color: var(--muted); }
+
+  /* Timer */
+  .timer-strip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card2);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-top: 14px;
+    font-size: 13px;
+  }
+
+  .timer-strip .timer-label { color: var(--muted); flex: 1; }
+  .timer-strip .timer-val { font-weight: 900; color: var(--accent3); font-size: 16px; }
+  .timer-btn {
+    background: var(--accent3);
+    border: none;
+    color: #fff;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="logo">CALISTHENICS PROGRAM</div>
+    <h1>برنامج <span>الشهرين</span></h1>
+  </div>
+
+  <!-- Program overall progress -->
+  <div class="program-progress">
+    <div class="prog-title">تقدم البرنامج — ٨ أسابيع</div>
+    <div class="weeks-grid" id="weeksGrid"></div>
+  </div>
+
+  <!-- Today card -->
+  <div id="mainContent"></div>
+
+  <!-- Nav -->
+  <div class="nav-buttons">
+    <button class="nav-btn" onclick="changeDay(-1)">◀ اليوم السابق</button>
+    <button class="nav-btn primary" onclick="changeDay(1)">اليوم التالي ▶</button>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+
+const START_DATE = new Date('2026-05-11'); // غداً
+
+const PHASES = [
+  { name: '🟡 المرحلة الأولى', label: 'تأسيس', weeks: [1,2] },
+  { name: '🟠 المرحلة الثانية', label: 'بناء', weeks: [3,4] },
+  { name: '🔴 المرحلة الثالثة', label: 'تطوير', weeks: [5,6] },
+  { name: '🏆 المرحلة الرابعة', label: 'إتقان', weeks: [7,8] },
+];
+
+// Upper body workouts per phase
+const UPPER = [
+  // Phase 1
+  [
+    { name: 'Wall Push-ups', sets: 3, reps: '15', rest: '30 ث', tip: 'ظهرك مستقيم، جسمك كله يتحرك زي لوح' },
+    { name: 'Dead Hang', sets: 3, reps: '20 ثانية', rest: '45 ث', tip: 'تعلقي بالبار بس — مش لازم ترفعي أي حاجة' },
+    { name: 'Scapular Pulls', sets: 3, reps: '8', rest: '45 ث', tip: 'وانتِ معلقة، حركي الكتف للأسفل والخلف بس بدون ثني الكوع' },
+    { name: 'Plank', sets: 3, reps: '20 ثانية', rest: '30 ث', tip: 'على الكوع لو صعب — بطنك متسابش تنزل' },
+  ],
+  // Phase 2
+  [
+    { name: 'Incline Push-ups', sets: 3, reps: '12', rest: '30 ث', tip: 'إيديكِ على طاولة — أصعب من الحيط وأسهل من الأرض' },
+    { name: 'Negative Pull-ups', sets: 4, reps: '4', rest: '60 ث', tip: 'اطلعي بالكرسي، انزلي ببطء ٥ ثواني — ده السر الحقيقي' },
+    { name: 'Australian Pull-ups', sets: 3, reps: '10', rest: '45 ث', tip: 'لو معندكيش بار منخفض، عملي Resistance Band Rows' },
+    { name: 'Hollow Body Hold', sets: 3, reps: '25 ثانية', rest: '30 ث', tip: 'ظهرك ملاصق الأرض طول الوقت' },
+  ],
+  // Phase 3
+  [
+    { name: 'Push-ups عادية', sets: 3, reps: '8-10', rest: '30 ث', tip: 'صدرك يوصل للأرض، كوعك بيرجع للخلف مش للجانب' },
+    { name: 'Band-assisted Pull-ups', sets: 4, reps: '6', rest: '75 ث', tip: 'البند بيساعدك — حاولي تعتمدي عليه أقل كل مرة' },
+    { name: 'Negative Pull-ups', sets: 3, reps: '4', rest: '75 ث', tip: 'النزول ٧ ثواني — تعدي بصوت عالي' },
+    { name: 'L-sit Tuck Hold', sets: 3, reps: '15 ثانية', rest: '30 ث', tip: 'ركبتك للصدر وانتِ مرفوعة — أصعب مما يبدو!' },
+  ],
+  // Phase 4
+  [
+    { name: 'Pull-ups حقيقية', sets: 5, reps: 'max', rest: '90 ث', tip: 'أقصى طاقة — سجلي كم عملتِ كل سيت' },
+    { name: 'Negative Pull-ups', sets: 2, reps: '3', rest: '90 ث', tip: 'النزول ١٠ ثواني — كل ثانية مهمة' },
+    { name: 'Push-ups', sets: 2, reps: '12', rest: '30 ث', tip: 'حافظي على الشكل الصح حتى لو تعبانة' },
+  ],
+];
+
+// Lower + Core workouts per phase
+const LOWER = [
+  // Phase 1
+  [
+    { name: 'Glute Bridge', sets: 3, reps: '15', rest: '30 ث', tip: 'استلقي، ارفعي الحوض للسقف — انزلي ببطء' },
+    { name: 'Bodyweight Squat', sets: 3, reps: '12', rest: '30 ث', tip: 'ركبتك فوق الأصابع، ظهرك مستقيم' },
+    { name: 'Dead Bug', sets: 3, reps: '8 لكل جانب', rest: '30 ث', tip: 'ظهرك ملاصق الأرض طول الوقت' },
+    { name: 'Plank', sets: 3, reps: '20 ثانية', rest: '30 ث', tip: 'على الكوع لو صعب' },
+  ],
+  // Phase 2
+  [
+    { name: 'Sumo Squat', sets: 3, reps: '12', rest: '30 ث', tip: 'رجليكِ واسعة والأصابع للخارج' },
+    { name: 'Reverse Lunge', sets: 3, reps: '8 لكل رجل', rest: '40 ث', tip: 'خطوة للخلف — أأمن للركبة من الأمام' },
+    { name: 'Single Leg Glute Bridge', sets: 3, reps: '10 لكل جانب', rest: '30 ث', tip: 'رجل واحدة في الهواء — حوضك يفضل مرفوع' },
+    { name: 'Hollow Body Hold', sets: 3, reps: '25 ثانية', rest: '30 ث', tip: 'جسمك زي شكل الموزة' },
+    { name: 'Leg Raises', sets: 3, reps: '10', rest: '30 ث', tip: 'ظهرك ملاصق الأرض — ارفعي ببطء وانزلي ببطء' },
+  ],
+  // Phase 3
+  [
+    { name: 'Bulgarian Split Squat', sets: 3, reps: '8 لكل رجل', rest: '45 ث', tip: 'رجلك الخلفية على كرسي — صعب لكن فعّال جداً' },
+    { name: 'Jump Squat', sets: 3, reps: '10', rest: '40 ث', tip: 'اهبطي بنعومة — الركبة دايماً مثنية عند الهبوط' },
+    { name: 'Copenhagen Plank', sets: 3, reps: '15 ث لكل جانب', rest: '40 ث', tip: 'رجلك العليا على كرسي — جسمك مستقيم زي لوح' },
+    { name: 'Tuck Crunches', sets: 3, reps: '12', rest: '30 ث', tip: 'ركبتك للصدر وجسمك ليها — اضغطي البطن فعلاً' },
+    { name: 'Plank to Down Dog', sets: 3, reps: '10', rest: '30 ث', tip: 'من الـ plank ارفعي وردفيكِ للسقف وارجعي' },
+  ],
+  // Phase 4
+  [
+    { name: 'Pistol Squat Assisted', sets: 3, reps: '5 لكل رجل', rest: '60 ث', tip: 'إيدك في الحيط للتوازن — رجلك التانية أمامك' },
+    { name: 'Jump Lunge', sets: 3, reps: '8 لكل رجل', rest: '45 ث', tip: 'اهبطي بنعومة وتبادلي الرجلين في الهواء' },
+    { name: 'Dragon Flag Negative', sets: 3, reps: '4 ببطء', rest: '60 ث', tip: 'انزلي ٥ ثواني — ده أصعب core في الكاليثنكس' },
+    { name: 'L-sit على كرسيين', sets: 3, reps: '15 ثانية', rest: '45 ث', tip: 'اقعدي على كرسيين وارفعي جسمك — ركبتك للصدر' },
+  ],
+];
+
+const DAY_NAMES = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const MONTH_NAMES = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+// ============================================================
+// STATE
+// ============================================================
+
+let currentDayOffset = 0; // days from START_DATE
+let completedExercises = JSON.parse(localStorage.getItem('completedEx') || '{}');
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+function getDateForOffset(offset) {
+  const d = new Date(START_DATE);
+  d.setDate(d.getDate() + offset);
+  return d;
+}
+
+function getProgramDayInfo(offset) {
+  // day 0 = program day 1
+  const programDay = offset + 1; // 1-based
+  const weekNum = Math.ceil(programDay / 7); // 1-8
+  const dayInWeek = ((programDay - 1) % 7) + 1; // 1-7
+
+  // Week schedule: Sat(1)=upper, Sun(2)=lower, Mon(3)=upper, Tue(4)=rest, Wed(5)=upper, Thu(6)=lower, Fri(7)=rest
+  // dayInWeek: 1=Sat,2=Sun,3=Mon,4=Tue,5=Wed,6=Thu,7=Fri
+  const schedule = ['upper', 'lower', 'upper', 'rest', 'upper', 'lower', 'rest'];
+  const sessionType = schedule[dayInWeek - 1];
+
+  const phaseIndex = Math.min(Math.floor((weekNum - 1) / 2), 3);
+
+  return { programDay, weekNum, dayInWeek, sessionType, phaseIndex };
+}
+
+function getKey(offset) {
+  return `day_${offset}`;
+}
+
+function toggleExercise(offset, exIndex) {
+  const key = getKey(offset);
+  if (!completedExercises[key]) completedExercises[key] = [];
+  const arr = completedExercises[key];
+  const idx = arr.indexOf(exIndex);
+  if (idx === -1) arr.push(exIndex);
+  else arr.splice(idx, 1);
+  localStorage.setItem('completedEx', JSON.stringify(completedExercises));
+  render();
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+
+function render() {
+  renderWeeksGrid();
+  renderMain();
+}
+
+function renderWeeksGrid() {
+  const grid = document.getElementById('weeksGrid');
+  // get current week
+  const today = getProgramDayInfo(currentDayOffset);
+  grid.innerHTML = '';
+  for (let w = 1; w <= 8; w++) {
+    const dot = document.createElement('div');
+    dot.className = 'week-dot' + (w < today.weekNum ? ' done' : w === today.weekNum ? ' current' : '');
+    dot.textContent = w;
+    grid.appendChild(dot);
+  }
+}
+
+function renderMain() {
+  const container = document.getElementById('mainContent');
+  const date = getDateForOffset(currentDayOffset);
+  const { programDay, weekNum, sessionType, phaseIndex } = getProgramDayInfo(currentDayOffset);
+  const phase = PHASES[phaseIndex];
+
+  const dateStr = `${DAY_NAMES[date.getDay()]} ${date.getDate()} ${MONTH_NAMES[date.getMonth()]}`;
+
+  if (programDay > 56) {
+    container.innerHTML = `
+      <div class="rest-card">
+        <div class="rest-icon">🏆</div>
+        <h2>أنهيتِ البرنامج!</h2>
+        <p>٨ أسابيع كاملة — أنتِ الآن قادرة على ١٠ pull-ups<br>ماشاء الله عليكِ 💪</p>
+      </div>`;
+    return;
+  }
+
+  if (sessionType === 'rest') {
+    container.innerHTML = `
+      <div class="day-card">
+        <div class="day-info">
+          <div class="day-label">اليوم ${programDay} — الأسبوع ${weekNum}</div>
+          <div class="day-name">${dateStr}</div>
+        </div>
+        <div class="phase-badge">${phase.label}</div>
+      </div>
+      <div class="rest-card">
+        <div class="rest-icon">😴</div>
+        <h2>يوم راحة</h2>
+        <p>الراحة جزء من التمرين — العضلة بتتبني وانتِ مش بتشتغلي 🙂<br><br>اشربي مية كتير واستني بكره!</p>
+      </div>`;
+    return;
+  }
+
+  const isUpper = sessionType === 'upper';
+  const exercises = isUpper ? UPPER[phaseIndex] : LOWER[phaseIndex];
+  const key = getKey(currentDayOffset);
+  const done = completedExercises[key] || [];
+  const pct = exercises.length > 0 ? Math.round((done.length / exercises.length) * 100) : 0;
+  const allDone = done.length === exercises.length;
+
+  let exHTML = exercises.map((ex, i) => {
+    const isDone = done.includes(i);
+    return `
+      <div class="exercise-card ${isDone ? 'done' : ''}" onclick="toggleExercise(${currentDayOffset}, ${i})">
+        <div class="ex-check">${isDone ? '✓' : ''}</div>
+        <div class="ex-info">
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-meta">
+            <span class="sets">${ex.sets} سيت</span>
+            <span class="reps">× ${ex.reps}</span>
+            <span class="rest">راحة ${ex.rest}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Next session preview
+  let nextPreview = '';
+  for (let i = currentDayOffset + 1; i <= currentDayOffset + 3; i++) {
+    const next = getProgramDayInfo(i);
+    if (next.sessionType !== 'rest' && i <= 55) {
+      const nextDate = getDateForOffset(i);
+      const nextDateStr = `${DAY_NAMES[nextDate.getDay()]} ${nextDate.getDate()} ${MONTH_NAMES[nextDate.getMonth()]}`;
+      const nextType = next.sessionType === 'upper' ? 'الجزء العلوي + Pull-ups' : 'الجزء السفلي + Core';
+      nextPreview = `<div class="tip-card"><strong>الجلسة القادمة</strong>${nextDateStr} — ${nextType}</div>`;
+      break;
+    }
+  }
+
+  container.innerHTML = `
+    <div class="day-card">
+      <div class="day-info">
+        <div class="day-label">اليوم ${programDay} — الأسبوع ${weekNum}</div>
+        <div class="day-name">${dateStr}</div>
+        <div class="day-date">${phase.name}</div>
+      </div>
+      <div class="phase-badge">${phase.label}</div>
+    </div>
+
+    <div class="session-type">
+      <span class="session-tag ${isUpper ? 'upper' : 'lower'}">
+        ${isUpper ? '💪 جزء علوي + Pull-ups' : '🦵 جزء سفلي + Core'}
+      </span>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-header">
+        <span class="progress-label">تقدم اليوم</span>
+        <span class="progress-pct">${done.length}/${exercises.length} تمارين</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${pct}%"></div>
+      </div>
+    </div>
+
+    <div class="section-title">اضغطي على التمرين لما تخلصيه</div>
+    <div class="exercise-list">${exHTML}</div>
+
+    <div id="completeBanner" class="complete-banner ${allDone ? 'show' : ''}">
+      <div class="emoji">🎉</div>
+      <h3>أنهيتِ جلسة النهارده!</h3>
+      <p>ممتاز — جسمك بيتشكّل كل يوم 💪</p>
+    </div>
+
+    ${nextPreview}
+  `;
+}
+
+function changeDay(dir) {
+  const newOffset = currentDayOffset + dir;
+  if (newOffset < 0) return;
+  if (newOffset > 56) return;
+  currentDayOffset = newOffset;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// INIT — figure out today's offset
+// ============================================================
+
+function initToday() {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const start = new Date(START_DATE);
+  start.setHours(0,0,0,0);
+  const diff = Math.floor((today - start) / 86400000);
+  currentDayOffset = Math.max(0, Math.min(diff, 56));
+}
+
+initToday();
+render();
+</script>
+</body>
+</html>
