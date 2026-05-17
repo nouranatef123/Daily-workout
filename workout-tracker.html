@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>برنامج الكاليثنكس</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --card: #13131a;
+    --card2: #1a1a24;
+    --accent: #c8f060;
+    --accent2: #60d4f0;
+    --accent3: #f060a8;
+    --text: #f0f0f0;
+    --muted: #666;
+    --border: #2a2a3a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 20%, rgba(200,240,96,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(96,212,240,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 20px 16px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header {
+    text-align: center;
+    padding: 24px 0 20px;
+  }
+
+  .header .logo {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .header h1 { font-size: 28px; font-weight: 900; line-height: 1.1; }
+  .header h1 span { color: var(--accent); }
+
+  .day-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .day-info { flex: 1; }
+  .day-label { font-size: 11px; color: var(--muted); letter-spacing: 2px; font-weight: 700; }
+  .day-name { font-size: 22px; font-weight: 900; margin: 2px 0 4px; }
+  .day-date { font-size: 13px; color: var(--muted); }
+
+  .phase-badge {
+    background: rgba(200,240,96,0.1);
+    border: 1px solid rgba(200,240,96,0.3);
+    color: var(--accent);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .rest-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 20px;
+    text-align: center;
+    margin: 16px 0;
+  }
+
+  .rest-icon { font-size: 48px; margin-bottom: 12px; }
+  .rest-card h2 { font-size: 22px; font-weight: 900; margin-bottom: 8px; color: var(--accent2); }
+  .rest-card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+  .session-type { display: flex; gap: 10px; margin-bottom: 16px; }
+
+  .session-tag {
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .session-tag.upper {
+    background: rgba(200,240,96,0.1);
+    border: 1px solid rgba(200,240,96,0.3);
+    color: var(--accent);
+  }
+
+  .session-tag.lower {
+    background: rgba(96,212,240,0.1);
+    border: 1px solid rgba(96,212,240,0.3);
+    color: var(--accent2);
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin: 20px 0 10px;
+  }
+
+  .exercise-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .exercise-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .exercise-card::before {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .exercise-card.done { background: rgba(200,240,96,0.05); border-color: rgba(200,240,96,0.2); }
+  .exercise-card.done::before { opacity: 1; }
+  .exercise-card:active { transform: scale(0.98); }
+
+  .ex-check {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+    transition: all 0.2s;
+    background: var(--card2);
+  }
+
+  .exercise-card.done .ex-check { background: var(--accent); border-color: var(--accent); color: #000; }
+  .ex-info { flex: 1; }
+  .ex-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+  .exercise-card.done .ex-name { color: var(--muted); text-decoration: line-through; }
+  .ex-meta { font-size: 12px; color: var(--muted); }
+  .ex-meta span { display: inline-block; margin-left: 8px; }
+  .ex-meta .sets { color: var(--accent); }
+  .ex-meta .reps { color: var(--accent2); }
+  .ex-meta .rest { color: var(--accent3); }
+
+  .progress-section { margin: 20px 0; }
+
+  .progress-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+  }
+
+  .progress-label { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .progress-pct { font-size: 14px; font-weight: 900; color: var(--accent); }
+
+  .progress-bar { height: 6px; background: var(--card2); border-radius: 100px; overflow: hidden; }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 100px;
+    transition: width 0.4s ease;
+  }
+
+  .program-progress {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+
+  .prog-title { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--muted); margin-bottom: 14px; }
+
+  .weeks-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+
+  .week-dot {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; color: var(--muted);
+    transition: all 0.3s;
+  }
+
+  .week-dot.current { background: rgba(200,240,96,0.15); border-color: var(--accent); color: var(--accent); }
+  .week-dot.done { background: var(--accent); border-color: var(--accent); color: #000; }
+
+  .sessions-counter {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .sessions-counter .label { font-size: 13px; color: var(--muted); }
+  .sessions-counter .val { font-size: 20px; font-weight: 900; color: var(--accent); }
+
+  .nav-buttons { display: flex; gap: 10px; margin-top: 14px; }
+
+  .nav-btn {
+    flex: 1; padding: 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:active { transform: scale(0.97); }
+  .nav-btn.primary { background: var(--accent); border-color: var(--accent); color: #000; }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .finish-btn {
+    width: 100%; padding: 18px;
+    border-radius: 16px; border: none;
+    background: var(--accent); color: #000;
+    font-family: 'Cairo', sans-serif;
+    font-size: 16px; font-weight: 900;
+    cursor: pointer; margin-top: 16px;
+    transition: all 0.2s; letter-spacing: 1px;
+  }
+
+  .finish-btn:active { transform: scale(0.97); }
+  .finish-btn:disabled { opacity: 0.35; cursor: not-allowed; background: var(--card2); color: var(--muted); border: 1px solid var(--border); }
+  .finish-btn.done-btn { background: var(--card2); color: var(--accent); border: 1px solid rgba(200,240,96,0.3); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="logo">CALISTHENICS PROGRAM</div>
+    <h1>برنامج <span>الشهرين</span></h1>
+  </div>
+
+  <div class="program-progress">
+    <div class="prog-title">تقدم البرنامج — ٨ أسابيع</div>
+    <div class="weeks-grid" id="weeksGrid"></div>
+  </div>
+
+  <div class="sessions-counter">
+    <span class="label">إجمالي الجلسات المكتملة</span>
+    <span class="val" id="totalSessions">0 / 40</span>
+  </div>
+
+  <div id="mainContent"></div>
+
+</div>
+
+<script>
+const PHASES = [
+  { name: '🟡 المرحلة الأولى', label: 'تأسيس' },
+  { name: '🟠 المرحلة الثانية', label: 'بناء' },
+  { name: '🔴 المرحلة الثالثة', label: 'تطوير' },
+  { name: '🏆 المرحلة الرابعة', label: 'إتقان' },
+];
+
+const WEEK_PATTERN = ['upper','lower','upper','rest','upper','lower','rest'];
+
+const UPPER = [
+  [
+    { name: 'Wall Push-ups', sets: 3, reps: '15', rest: '30 ث' },
+    { name: 'Dead Hang', sets: 3, reps: '20 ثانية', rest: '45 ث' },
+    { name: 'Scapular Pulls', sets: 3, reps: '8', rest: '45 ث' },
+    { name: 'Plank', sets: 3, reps: '20 ثانية', rest: '30 ث' },
+  ],
+  [
+    { name: 'Incline Push-ups', sets: 3, reps: '12', rest: '30 ث' },
+    { name: 'Negative Pull-ups', sets: 4, reps: '4', rest: '60 ث' },
+    { name: 'Australian Pull-ups', sets: 3, reps: '10', rest: '45 ث' },
+    { name: 'Hollow Body Hold', sets: 3, reps: '25 ثانية', rest: '30 ث' },
+  ],
+  [
+    { name: 'Push-ups عادية', sets: 3, reps: '8-10', rest: '30 ث' },
+    { name: 'Band-assisted Pull-ups', sets: 4, reps: '6', rest: '75 ث' },
+    { name: 'Negative Pull-ups', sets: 3, reps: '4', rest: '75 ث' },
+    { name: 'L-sit Tuck Hold', sets: 3, reps: '15 ثانية', rest: '30 ث' },
+  ],
+  [
+    { name: 'Pull-ups حقيقية', sets: 5, reps: 'max', rest: '90 ث' },
+    { name: 'Negative Pull-ups', sets: 2, reps: '3', rest: '90 ث' },
+    { name: 'Push-ups', sets: 2, reps: '12', rest: '30 ث' },
+  ],
+];
+
+const LOWER = [
+  [
+    { name: 'Glute Bridge', sets: 3, reps: '15', rest: '30 ث' },
+    { name: 'Bodyweight Squat', sets: 3, reps: '12', rest: '30 ث' },
+    { name: 'Dead Bug', sets: 3, reps: '8 لكل جانب', rest: '30 ث' },
+    { name: 'Plank', sets: 3, reps: '20 ثانية', rest: '30 ث' },
+  ],
+  [
+    { name: 'Sumo Squat', sets: 3, reps: '12', rest: '30 ث' },
+    { name: 'Reverse Lunge', sets: 3, reps: '8 لكل رجل', rest: '40 ث' },
+    { name: 'Single Leg Glute Bridge', sets: 3, reps: '10 لكل جانب', rest: '30 ث' },
+    { name: 'Hollow Body Hold', sets: 3, reps: '25 ثانية', rest: '30 ث' },
+    { name: 'Leg Raises', sets: 3, reps: '10', rest: '30 ث' },
+  ],
+  [
+    { name: 'Bulgarian Split Squat', sets: 3, reps: '8 لكل رجل', rest: '45 ث' },
+    { name: 'Jump Squat', sets: 3, reps: '10', rest: '40 ث' },
+    { name: 'Copenhagen Plank', sets: 3, reps: '15 ث لكل جانب', rest: '40 ث' },
+    { name: 'Tuck Crunches', sets: 3, reps: '12', rest: '30 ث' },
+    { name: 'Plank to Down Dog', sets: 3, reps: '10', rest: '30 ث' },
+  ],
+  [
+    { name: 'Pistol Squat Assisted', sets: 3, reps: '5 لكل رجل', rest: '60 ث' },
+    { name: 'Jump Lunge', sets: 3, reps: '8 لكل رجل', rest: '45 ث' },
+    { name: 'Dragon Flag Negative', sets: 3, reps: '4 ببطء', rest: '60 ث' },
+    { name: 'L-sit على كرسيين', sets: 3, reps: '15 ثانية', rest: '45 ث' },
+  ],
+];
+
+// ---- STATE ----
+function loadState() {
+  const raw = localStorage.getItem('workoutState_v2');
+  if (raw) return JSON.parse(raw);
+  return { currentSession: 0, completedSessions: [], exerciseDone: {} };
+}
+
+function saveState() {
+  localStorage.setItem('workoutState_v2', JSON.stringify(state));
+}
+
+let state = loadState();
+
+// ---- HELPERS ----
+function getSessionInfo(si) {
+  const weekNum = Math.floor(si / 7) + 1;
+  const dayInWeek = si % 7;
+  const sessionType = WEEK_PATTERN[dayInWeek];
+  const phaseIndex = Math.min(Math.floor((weekNum - 1) / 2), 3);
+  return { weekNum, dayInWeek, sessionType, phaseIndex };
+}
+
+function getTotalCompletedWorkouts() {
+  return state.completedSessions.filter(i => getSessionInfo(i).sessionType !== 'rest').length;
+}
+
+// ---- RENDER ----
+function render() {
+  // weeks grid
+  const grid = document.getElementById('weeksGrid');
+  const currentWeek = getSessionInfo(state.currentSession).weekNum;
+  grid.innerHTML = '';
+  for (let w = 1; w <= 8; w++) {
+    const dot = document.createElement('div');
+    dot.className = 'week-dot' + (w < currentWeek ? ' done' : w === currentWeek ? ' current' : '');
+    dot.textContent = w;
+    grid.appendChild(dot);
+  }
+
+  // counter
+  document.getElementById('totalSessions').textContent = `${getTotalCompletedWorkouts()} / 40`;
+
+  // main
+  const container = document.getElementById('mainContent');
+  const si = state.currentSession;
+
+  if (si >= 56) {
+    container.innerHTML = `<div class="rest-card"><div class="rest-icon">🏆</div><h2>أنهيتِ البرنامج!</h2><p>٤٠ جلسة كاملة 💪<br>ماشاء الله عليكِ!</p></div>`;
+    return;
+  }
+
+  const { weekNum, sessionType, phaseIndex } = getSessionInfo(si);
+  const phase = PHASES[phaseIndex];
+  const isCompleted = state.completedSessions.includes(si);
+
+  if (sessionType === 'rest') {
+    container.innerHTML = `
+      <div class="day-card">
+        <div class="day-info">
+          <div class="day-label">اليوم ${si + 1} — الأسبوع ${weekNum}</div>
+          <div class="day-name">يوم راحة 😴</div>
+          <div class="day-date">${phase.name}</div>
+        </div>
+        <div class="phase-badge">${phase.label}</div>
+      </div>
+      <div class="rest-card">
+        <div class="rest-icon">😴</div>
+        <h2>يوم راحة</h2>
+        <p>الراحة جزء من التمرين 🙂<br><br>جاهزة تكملي؟ اضغطي التالي!</p>
+      </div>
+      <div class="nav-buttons">
+        <button class="nav-btn" onclick="prevSession()" ${si === 0 ? 'disabled' : ''}>◀ السابق</button>
+        <button class="nav-btn primary" onclick="completeAndNext()">التالي ▶</button>
+      </div>`;
+    return;
+  }
+
+  const isUpper = sessionType === 'upper';
+  const exercises = isUpper ? UPPER[phaseIndex] : LOWER[phaseIndex];
+  const donEx = state.exerciseDone[si] || [];
+  const pct = Math.round((donEx.length / exercises.length) * 100);
+  const allExDone = donEx.length === exercises.length;
+
+  const exHTML = exercises.map((ex, i) => {
+    const isDone = donEx.includes(i);
+    return `
+      <div class="exercise-card ${isDone ? 'done' : ''}" onclick="toggleEx(${si},${i})">
+        <div class="ex-check">${isDone ? '✓' : ''}</div>
+        <div class="ex-info">
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-meta">
+            <span class="sets">${ex.sets} سيت</span>
+            <span class="reps">× ${ex.reps}</span>
+            <span class="rest">راحة ${ex.rest}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  const finishDisabled = !allExDone && !isCompleted;
+  const finishLabel = isCompleted
+    ? '✓ الجلسة دي خلصت — اضغطي للتالية'
+    : allExDone ? '🎉 أنهيتِ الجلسة — التالية!'
+    : `أكملي التمارين الأول (${donEx.length}/${exercises.length})`;
+
+  container.innerHTML = `
+    <div class="day-card">
+      <div class="day-info">
+        <div class="day-label">الجلسة ${si + 1} — الأسبوع ${weekNum}</div>
+        <div class="day-name">${isUpper ? '💪 الجزء العلوي' : '🦵 الجزء السفلي'}</div>
+        <div class="day-date">${phase.name}</div>
+      </div>
+      <div class="phase-badge">${phase.label}</div>
+    </div>
+
+    <div class="session-type">
+      <span class="session-tag ${isUpper ? 'upper' : 'lower'}">
+        ${isUpper ? '💪 جزء علوي + Pull-ups' : '🦵 جزء سفلي + Core'}
+      </span>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-header">
+        <span class="progress-label">تقدم الجلسة</span>
+        <span class="progress-pct">${donEx.length}/${exercises.length} تمارين</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+
+    <div class="section-title">اضغطي على التمرين لما تخلصيه</div>
+    <div class="exercise-list">${exHTML}</div>
+
+    <button class="finish-btn ${isCompleted ? 'done-btn' : ''}"
+      onclick="completeAndNext()"
+      ${finishDisabled ? 'disabled' : ''}>
+      ${finishLabel}
+    </button>
+
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="prevSession()" ${si === 0 ? 'disabled' : ''}>◀ السابقة</button>
+      <button class="nav-btn" onclick="nextSession()" ${si >= 55 ? 'disabled' : ''}>التالية ▶</button>
+    </div>`;
+}
+
+// ---- ACTIONS ----
+function toggleEx(si, i) {
+  if (!state.exerciseDone[si]) state.exerciseDone[si] = [];
+  const arr = state.exerciseDone[si];
+  const idx = arr.indexOf(i);
+  if (idx === -1) arr.push(i); else arr.splice(idx, 1);
+  saveState();
+  render();
+}
+
+function completeAndNext() {
+  const si = state.currentSession;
+  if (!state.completedSessions.includes(si)) state.completedSessions.push(si);
+  if (si < 55) state.currentSession = si + 1;
+  saveState();
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevSession() {
+  if (state.currentSession > 0) { state.currentSession--; saveState(); render(); window.scrollTo({top:0,behavior:'smooth'}); }
+}
+
+function nextSession() {
+  if (state.currentSession < 55) { state.currentSession++; saveState(); render(); window.scrollTo({top:0,behavior:'smooth'}); }
+}
+
+render();
+</script>
+</body>
+</html>
